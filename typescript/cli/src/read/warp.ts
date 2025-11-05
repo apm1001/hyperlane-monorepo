@@ -7,6 +7,10 @@ import {
 } from '@hyperlane-xyz/core';
 import { AltVMWarpRouteReader } from '@hyperlane-xyz/deploy-sdk';
 import {
+  getProtocolProviderFactory,
+  hasProtocolProviderFactory,
+} from '@hyperlane-xyz/provider-sdk/registry';
+import {
   ChainMap,
   ChainName,
   DerivedWarpRouteDeployConfig,
@@ -72,14 +76,14 @@ export async function runWarpRouteRead({
     addresses,
     (chain, _address): _address is string =>
       context.multiProvider.getProtocol(chain) === ProtocolType.Ethereum ||
-      context.altVmProvider.supports(context.multiProvider.getProtocol(chain)),
+      hasProtocolProviderFactory(context.multiProvider.getProtocol(chain)),
   );
   if (warpCoreConfig) {
     warpCoreConfig.tokens = warpCoreConfig.tokens.filter(
       (config) =>
         context.multiProvider.getProtocol(config.chainName) ===
           ProtocolType.Ethereum ||
-        context.altVmProvider.supports(
+        hasProtocolProviderFactory(
           context.multiProvider.getProtocol(config.chainName),
         ),
     );
@@ -123,7 +127,8 @@ async function deriveWarpRouteConfigs(
   // Derive and return warp route config
   return promiseObjAll(
     objMap(addresses, async (chain, address) => {
-      switch (context.multiProvider.getProtocol(chain)) {
+      const protocol = context.multiProvider.getProtocol(chain);
+      switch (protocol) {
         case ProtocolType.Ethereum: {
           return new EvmERC20WarpRouteReader(
             multiProvider,
@@ -131,7 +136,10 @@ async function deriveWarpRouteConfigs(
           ).deriveWarpRouteConfig(address);
         }
         default: {
-          const provider = await context.altVmProvider.get(chain);
+          const provider = await getProtocolProviderFactory(
+            protocol,
+          ).getProvider(multiProvider.getChainMetadata(chain));
+          console.log('providerzzzz', provider);
           return new AltVMWarpRouteReader(
             altVmChainLookup(multiProvider),
             provider,

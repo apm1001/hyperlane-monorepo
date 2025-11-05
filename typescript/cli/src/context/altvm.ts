@@ -97,6 +97,7 @@ export class AltVMProviderFactory
     this.metadataManager = metadataManager;
   }
 
+  // Equivalent to IProtocolProviderFactory.getProvider
   public async get(chain: string): Promise<AltVM.IProvider> {
     const metadata = this.metadataManager.getChainMetadata(chain);
     const protocolDefinition = ALT_VM_SUPPORTED_PROTOCOLS[metadata.protocol];

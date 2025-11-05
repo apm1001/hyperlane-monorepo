@@ -1,9 +1,10 @@
 import { zeroAddress } from 'viem';
 
 import { AltVMHookReader, AltVMIsmReader } from '@hyperlane-xyz/deploy-sdk';
-import { AltVM, ProtocolType } from '@hyperlane-xyz/provider-sdk';
+import { ProtocolType } from '@hyperlane-xyz/provider-sdk';
 import { HookConfig } from '@hyperlane-xyz/provider-sdk/hook';
 import { IsmConfig } from '@hyperlane-xyz/provider-sdk/ism';
+import { getProtocolProviderFactory } from '@hyperlane-xyz/provider-sdk/registry';
 import {
   Address,
   TransformObjectTransformer,
@@ -131,14 +132,12 @@ export function getRouterAddressesFromWarpCoreConfig(
  */
 export async function expandWarpDeployConfig(params: {
   multiProvider: MultiProvider;
-  altVmProvider: AltVM.IProviderFactory;
   warpDeployConfig: WarpRouteDeployConfigMailboxRequired;
   deployedRoutersAddresses: ChainMap<Address>;
   expandedOnChainWarpConfig?: WarpRouteDeployConfigMailboxRequired;
 }): Promise<WarpRouteDeployConfigMailboxRequired> {
   const {
     multiProvider,
-    altVmProvider,
     warpDeployConfig,
     deployedRoutersAddresses,
     expandedOnChainWarpConfig,
@@ -271,7 +270,9 @@ export async function expandWarpDeployConfig(params: {
             break;
           }
           default: {
-            const provider = await altVmProvider.get(chain);
+            const provider = await getProtocolProviderFactory(
+              protocol,
+            ).getProvider(multiProvider.getChainMetadata(chain));
 
             const reader = new AltVMHookReader(
               (chain) => multiProvider.getChainMetadata(chain),
@@ -300,8 +301,9 @@ export async function expandWarpDeployConfig(params: {
             break;
           }
           default: {
-            const provider = await altVmProvider.get(chain);
-
+            const provider = await getProtocolProviderFactory(
+              protocol,
+            ).getProvider(multiProvider.getChainMetadata(chain));
             const reader = new AltVMIsmReader(
               (chain) => multiProvider.tryGetChainName(chain),
               provider,

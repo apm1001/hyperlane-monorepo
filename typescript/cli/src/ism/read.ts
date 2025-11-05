@@ -1,4 +1,5 @@
 import { AltVMIsmReader } from '@hyperlane-xyz/deploy-sdk';
+import { getProtocolProviderFactory } from '@hyperlane-xyz/provider-sdk/registry';
 import { ChainName, DerivedIsmConfig, EvmIsmReader } from '@hyperlane-xyz/sdk';
 import { Address, ProtocolType, stringifyObject } from '@hyperlane-xyz/utils';
 
@@ -20,15 +21,18 @@ export async function readIsmConfig({
   address: Address;
   out?: string;
 }): Promise<void> {
+  const protocol = context.multiProvider.getProtocol(chain);
   let config: DerivedIsmConfig;
   let stringConfig: string;
 
-  if (context.multiProvider.getProtocol(chain) === ProtocolType.Ethereum) {
+  if (protocol === ProtocolType.Ethereum) {
     const ismReader = new EvmIsmReader(context.multiProvider, chain);
     config = await ismReader.deriveIsmConfig(address);
     stringConfig = stringifyObject(config, resolveFileFormat(out), 2);
   } else {
-    const provider = await context.altVmProvider.get(chain);
+    const provider = await getProtocolProviderFactory(protocol).getProvider(
+      context.multiProvider.getChainMetadata(chain),
+    );
     const ismReader = new AltVMIsmReader(
       (chain) => context.multiProvider.tryGetChainName(chain),
       provider,

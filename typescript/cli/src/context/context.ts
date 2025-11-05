@@ -1,6 +1,12 @@
 import { confirm } from '@inquirer/prompts';
 import { ethers } from 'ethers';
 
+import { CosmosNativeProviderFactory } from '@hyperlane-xyz/cosmos-sdk';
+import {
+  ProtocolRegistrar,
+  hasProtocolProviderFactory,
+  registerProtocol,
+} from '@hyperlane-xyz/provider-sdk/registry';
 import { IRegistry } from '@hyperlane-xyz/registry';
 import { getRegistry } from '@hyperlane-xyz/registry/fs';
 import {
@@ -18,7 +24,7 @@ import { readChainSubmissionStrategyConfig } from '../config/strategy.js';
 import { detectAndConfirmOrPrompt } from '../utils/input.js';
 import { getSigner } from '../utils/keys.js';
 
-import { AltVMProviderFactory, AltVMSignerFactory } from './altvm.js';
+import { AltVMSignerFactory } from './altvm.js';
 import { ChainResolverFactory } from './strategies/chain/ChainResolverFactory.js';
 import { MultiProtocolSignerManager } from './strategies/signer/MultiProtocolSignerManager.js';
 import {
@@ -119,10 +125,21 @@ export async function getContext({
 
   const multiProvider = await getMultiProvider(registry);
   const multiProtocolProvider = await getMultiProtocolProvider(registry);
-  const altVmProvider = new AltVMProviderFactory(multiProvider);
+
+  if (!hasProtocolProviderFactory(ProtocolType.Cosmos))
+    registerProtocol((registrar: ProtocolRegistrar) =>
+      registrar.registerProtocol(
+        ProtocolType.Cosmos,
+        () => new CosmosNativeProviderFactory(),
+      ),
+    );
+
   const supportedProtocols = [
     ProtocolType.Ethereum,
-    ...altVmProvider.getSupportedProtocols(),
+
+    // @TODO Le: Remove this when ready to initializing providers later
+    ProtocolType.Cosmos,
+    ProtocolType.Radix,
   ];
 
   return {
@@ -131,7 +148,6 @@ export async function getContext({
     chainMetadata: multiProvider.metadata,
     multiProvider,
     multiProtocolProvider,
-    altVmProvider,
     supportedProtocols,
     key: keyMap,
     skipConfirmation: !!skipConfirmation,
