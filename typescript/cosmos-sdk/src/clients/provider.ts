@@ -13,6 +13,24 @@ import { CometClient, connectComet } from '@cosmjs/tendermint-rpc';
 
 import { isTypes, warpTypes } from '@hyperlane-xyz/cosmos-types';
 import { AltVM } from '@hyperlane-xyz/provider-sdk';
+import { IProvider, ISigner } from '@hyperlane-xyz/provider-sdk/altvm';
+import { ChainMetadataForAltVM } from '@hyperlane-xyz/provider-sdk/chain';
+import {
+  IProtocolProviderFactory,
+  SignerConfig,
+} from '@hyperlane-xyz/provider-sdk/factory';
+import { HookConfig } from '@hyperlane-xyz/provider-sdk/hook';
+import { IsmConfig } from '@hyperlane-xyz/provider-sdk/ism';
+import {
+  AnnotatedTx,
+  HypModuleFactory,
+  TxReceipt,
+} from '@hyperlane-xyz/provider-sdk/module';
+import {
+  ITransactionSubmitter,
+  TransactionSubmitterConfig,
+} from '@hyperlane-xyz/provider-sdk/submitter';
+import { WarpConfig } from '@hyperlane-xyz/provider-sdk/warp';
 import { assert, strip0x } from '@hyperlane-xyz/utils';
 
 import {
@@ -788,5 +806,44 @@ export class CosmosNativeProvider implements AltVM.IProvider<EncodeObject> {
         custom_hook_metadata: req.customHookMetadata,
       }),
     };
+  }
+}
+
+// @TODO: Move this
+export class CosmosNativeProviderFactory implements IProtocolProviderFactory {
+  getProvider(chainMetadata: ChainMetadataForAltVM): Promise<IProvider> {
+    assert(chainMetadata.rpcsUrls, 'rpc urls undefined');
+    const rpcUrls = chainMetadata.rpcsUrls.map((rpc) => rpc.http);
+    return CosmosNativeProvider.connect(rpcUrls, chainMetadata.domainId);
+  }
+  getSigner(
+    chainMetadata: ChainMetadataForAltVM,
+    config: SignerConfig,
+  ): Promise<ISigner<AnnotatedTx, TxReceipt>> {
+    throw Error('not implemented');
+  }
+  getSubmitter(
+    chainMetadata: ChainMetadataForAltVM,
+    config: TransactionSubmitterConfig<never>,
+  ): Promise<ITransactionSubmitter> {
+    throw Error('not implemented');
+  }
+  registerSubmitterFactory(
+    type: string,
+    factory: (
+      chainMetadata: ChainMetadataForAltVM,
+      config: TransactionSubmitterConfig<never>,
+    ) => Promise<ITransactionSubmitter>,
+  ): void {
+    throw Error('not implemented');
+  }
+  ismFactory(): HypModuleFactory<IsmConfig, any> {
+    throw Error('not implemented');
+  }
+  hookFactory(): HypModuleFactory<HookConfig, any> {
+    throw Error('not implemented');
+  }
+  tokenRouterFactory(): HypModuleFactory<WarpConfig, any> {
+    throw Error('not implemented');
   }
 }
