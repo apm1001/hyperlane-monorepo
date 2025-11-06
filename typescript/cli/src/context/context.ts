@@ -126,10 +126,10 @@ export async function getContext({
   const multiProvider = await getMultiProvider(registry);
   const multiProtocolProvider = await getMultiProtocolProvider(registry);
 
-  if (!hasProtocolProviderFactory(ProtocolType.Cosmos))
+  if (!hasProtocolProviderFactory(ProtocolType.CosmosNative))
     registerProtocol((registrar: ProtocolRegistrar) =>
       registrar.registerProtocol(
-        ProtocolType.Cosmos,
+        ProtocolType.CosmosNative,
         () => new CosmosNativeProviderFactory(),
       ),
     );
@@ -138,7 +138,7 @@ export async function getContext({
     ProtocolType.Ethereum,
 
     // @TODO Le: Remove this when ready to initializing providers later
-    ProtocolType.Cosmos,
+    ProtocolType.CosmosNative,
     ProtocolType.Radix,
   ];
 
