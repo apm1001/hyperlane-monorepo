@@ -809,7 +809,7 @@ export class CosmosNativeProvider implements AltVM.IProvider<EncodeObject> {
   }
 }
 
-// @TODO: Move this
+// @TODO: Complete this as part of https://linear.app/hyperlane-xyz/issue/ENG-2397/adapt-cosmos-sdk-to-the-protocol-api
 export class CosmosNativeProviderFactory implements IProtocolProviderFactory {
   getProvider(chainMetadata: ChainMetadataForAltVM): Promise<IProvider> {
     assert(chainMetadata.rpcsUrls, 'rpc urls undefined');
