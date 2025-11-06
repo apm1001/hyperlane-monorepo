@@ -139,7 +139,6 @@ async function deriveWarpRouteConfigs(
           const provider = await getProtocolProviderFactory(
             protocol,
           ).getProvider(multiProvider.getChainMetadata(chain));
-          console.log('providerzzzz', provider);
           return new AltVMWarpRouteReader(
             altVmChainLookup(multiProvider),
             provider,
