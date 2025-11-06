@@ -84,37 +84,6 @@ class AltVMSupportedProtocols implements AltVM.ISupportedProtocols {
     return protocolDefinition.gas;
   }
 }
-
-export class AltVMProviderFactory
-  extends AltVMSupportedProtocols
-  implements AltVM.IProviderFactory
-{
-  private readonly metadataManager: ChainMetadataManager;
-
-  constructor(metadataManager: ChainMetadataManager) {
-    super();
-
-    this.metadataManager = metadataManager;
-  }
-
-  // Equivalent to IProtocolProviderFactory.getProvider
-  public async get(chain: string): Promise<AltVM.IProvider> {
-    const metadata = this.metadataManager.getChainMetadata(chain);
-    const protocolDefinition = ALT_VM_SUPPORTED_PROTOCOLS[metadata.protocol];
-
-    if (!protocolDefinition) {
-      throw new Error(
-        `Chain ${chain} with protocol type ${metadata.protocol} not supported in AltVM`,
-      );
-    }
-
-    return protocolDefinition.provider.connect(
-      metadata.rpcUrls.map((rpc) => rpc.http),
-      metadata.chainId,
-    );
-  }
-}
-
 export class AltVMSignerFactory
   extends AltVMSupportedProtocols
   implements AltVM.ISignerFactory<AnnotatedTx, TxReceipt>
