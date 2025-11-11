@@ -8335,7 +8335,6 @@ __metadata:
     chai-as-promised: "npm:^8.0.1"
     eslint: "npm:^9.31.0"
     mocha: "npm:^11.5.0"
-    prettier: "npm:^3.5.3"
     sinon: "npm:^13.0.2"
     tsx: "npm:^4.19.1"
     typescript: "npm:5.3.3"
