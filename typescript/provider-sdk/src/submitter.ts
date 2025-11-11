@@ -3,11 +3,6 @@ import { AnnotatedTx, TxReceipt } from './module.js';
 // By default each VM implementation should at least define a JSON rpc submitter
 export const TransactionSubmitterType = {
   JSON_RPC: 'jsonRpc',
-  IMPERSONATED_ACCOUNT: 'impersonatedAccount',
-  GNOSIS_SAFE: 'gnosisSafe',
-  GNOSIS_TX_BUILDER: 'gnosisSafeTxBuilder',
-  INTERCHAIN_ACCOUNT: 'interchainAccount',
-  TIMELOCK_CONTROLLER: 'timelockController',
 } as const;
 
 export type TransactionSubmitterType =

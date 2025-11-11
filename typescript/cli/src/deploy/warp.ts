@@ -4,7 +4,6 @@ import { stringify as yamlStringify } from 'yaml';
 import { buildArtifact as coreBuildArtifact } from '@hyperlane-xyz/core/buildArtifact.js';
 import { AltVMWarpModule } from '@hyperlane-xyz/deploy-sdk';
 import { GasAction, ProtocolType } from '@hyperlane-xyz/provider-sdk';
-import { ITransactionSubmitter } from '@hyperlane-xyz/provider-sdk/submitter';
 import { WarpConfig as ProviderWarpConfig } from '@hyperlane-xyz/provider-sdk/warp';
 import {
   AddWarpRouteConfigOptions,
@@ -29,6 +28,7 @@ import {
   SubmissionStrategy,
   TokenMetadataMap,
   TrustedRelayerIsmConfig,
+  TxSubmitterBuilder,
   TxSubmitterType,
   WarpCoreConfig,
   WarpCoreConfigSchema,
@@ -40,7 +40,7 @@ import {
   expandWarpDeployConfig,
   extractIsmAndHookFactoryAddresses,
   getRouterAddressesFromWarpCoreConfig,
-  getSubmitter,
+  getSubmitterBuilder,
   getTokenConnectionId,
   isCollateralTokenConfig,
   isXERC20TokenConfig,
@@ -931,7 +931,7 @@ async function submitWarpApplyTransactions(
 
           if (transactionReceipts) {
             const receiptPath = `${params.receiptsDir}/${chain}-${
-              submitter.type
+              submitter.txSubmitterType
             }-${Date.now()}-receipts.json`;
             writeYamlOrJson(receiptPath, transactionReceipts);
             logGreen(
@@ -980,7 +980,7 @@ async function submitWarpApplyTransactions(
  *
  * @returns the warp apply submitter
  */
-export async function getSubmitterByStrategy({
+export async function getSubmitterByStrategy<T extends ProtocolType>({
   chain,
   context,
   strategyUrl,
@@ -991,7 +991,7 @@ export async function getSubmitterByStrategy({
   strategyUrl?: string;
   isExtendedChain?: boolean;
 }): Promise<{
-  submitter: ITransactionSubmitter<string>;
+  submitter: TxSubmitterBuilder<T>;
   config: ExtendedSubmissionStrategy;
 }> {
   const { multiProvider, altVmSigner, registry } = context;
@@ -1011,11 +1011,11 @@ export async function getSubmitterByStrategy({
 
   const strategyToUse = submissionStrategy ?? defaultSubmitter;
   return {
-    submitter: await getSubmitter(
+    submitter: await getSubmitterBuilder<T>({
+      submissionStrategy: strategyToUse as SubmissionStrategy, // TODO: fix this
       multiProvider,
-      (strategyToUse as SubmissionStrategy).submitter,
-      await registry.getAddresses(),
-      {
+      coreAddressesByChain: await registry.getAddresses(),
+      additionalSubmitterFactories: {
         [ProtocolType.Ethereum]: {
           file: (_multiProvider: MultiProvider, metadata: any) => {
             return new EV5FileSubmitter(metadata);
@@ -1023,7 +1023,7 @@ export async function getSubmitterByStrategy({
         },
         ...altVmSigner.submitterFactories(chain),
       },
-    ),
+    }),
     config: submissionStrategy,
   };
 }

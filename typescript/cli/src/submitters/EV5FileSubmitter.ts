@@ -1,23 +1,36 @@
 import { Logger } from 'pino';
 
-import { AnnotatedTx } from '@hyperlane-xyz/provider-sdk/module';
-import { ITransactionSubmitter } from '@hyperlane-xyz/provider-sdk/submitter';
-import { assert, rootLogger } from '@hyperlane-xyz/utils';
+import {
+  ProtocolTypedTransaction,
+  TxSubmitterInterface,
+  TxSubmitterType,
+} from '@hyperlane-xyz/sdk';
+import {
+  Annotated,
+  ProtocolType,
+  assert,
+  rootLogger,
+} from '@hyperlane-xyz/utils';
 
 import { readYamlOrJson, writeYamlOrJson } from '../utils/files.js';
 
 import { CustomTxSubmitterType, FileTxSubmitterProps } from './types.js';
 
 export class EV5FileSubmitter
-  implements ITransactionSubmitter<typeof CustomTxSubmitterType.FILE>
+  implements TxSubmitterInterface<ProtocolType.Ethereum>
 {
-  type = CustomTxSubmitterType.FILE;
+  txSubmitterType: TxSubmitterType =
+    CustomTxSubmitterType.FILE as TxSubmitterType;
   protected readonly logger: Logger = rootLogger.child({
     module: 'file-submitter',
   });
   constructor(public readonly props: FileTxSubmitterProps) {}
 
-  async submit(...txs: AnnotatedTx[]): Promise<[]> {
+  async submit(
+    ...txs: Annotated<
+      ProtocolTypedTransaction<ProtocolType.Ethereum>['transaction']
+    >[]
+  ): Promise<[]> {
     const filepath = this.props.filepath.trim();
     const allTxs = [...txs];
 

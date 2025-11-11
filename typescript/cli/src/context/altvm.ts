@@ -8,18 +8,16 @@ import {
   AltVM,
   type MinimumRequiredGasByAction,
 } from '@hyperlane-xyz/provider-sdk';
-import {
-  AltVMJsonRpcSubmitter,
-  ProtocolType,
-} from '@hyperlane-xyz/provider-sdk';
+import { ProtocolType } from '@hyperlane-xyz/provider-sdk';
 import { AnnotatedTx, TxReceipt } from '@hyperlane-xyz/provider-sdk/module';
-import { ITransactionSubmitter } from '@hyperlane-xyz/provider-sdk/submitter';
 import { RadixProvider, RadixSigner } from '@hyperlane-xyz/radix-sdk';
 import {
+  AltVMJsonRpcTxSubmitter,
   ChainMap,
   ChainMetadataManager,
   MultiProvider,
   ProtocolMap,
+  SubmitterFactory,
   SubmitterMetadata,
   TxSubmitterType,
 } from '@hyperlane-xyz/sdk';
@@ -86,13 +84,6 @@ class AltVMSupportedProtocols implements AltVM.ISupportedProtocols {
     return protocolDefinition.gas;
   }
 }
-
-export type AltVMSubmitterFactory = (
-  multiProvider: MultiProvider,
-  metadata: SubmitterMetadata,
-  coreAddressesByChain: ChainMap<Record<string, string>>,
-) => Promise<ITransactionSubmitter<string>> | ITransactionSubmitter<string>;
-
 export class AltVMSignerFactory
   extends AltVMSupportedProtocols
   implements AltVM.ISignerFactory<AnnotatedTx, TxReceipt>
@@ -211,10 +202,10 @@ export class AltVMSignerFactory
 
   public submitterFactories(
     chain: string,
-  ): ProtocolMap<Record<string, AltVMSubmitterFactory>> {
+  ): ProtocolMap<Record<string, SubmitterFactory>> {
     const protocol = this.metadataManager.getProtocol(chain);
 
-    const factories: ProtocolMap<Record<string, AltVMSubmitterFactory>> = {};
+    const factories: ProtocolMap<Record<string, SubmitterFactory>> = {};
 
     if (
       protocol === ProtocolType.Ethereum ||
@@ -236,7 +227,7 @@ export class AltVMSignerFactory
             metadata.type === TxSubmitterType.JSON_RPC,
             `Invalid metadata type: ${metadata.type}, expected ${TxSubmitterType.JSON_RPC}`,
           );
-          return new AltVMJsonRpcSubmitter(signer, metadata);
+          return new AltVMJsonRpcTxSubmitter(signer, metadata);
         },
         [CustomTxSubmitterType.FILE]: (
           _multiProvider: MultiProvider,

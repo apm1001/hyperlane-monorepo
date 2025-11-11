@@ -1,4 +1,4 @@
-import { TxReceipt } from '@hyperlane-xyz/provider-sdk/module';
+import type { providers } from 'ethers';
 
 import type { DispatchedMessage } from '../../core/types.js';
 import type { DerivedHookConfig } from '../../hook/types.js';
@@ -22,7 +22,7 @@ export interface MetadataContext<
   HookContext = DerivedHookConfig,
 > {
   message: DispatchedMessage;
-  dispatchTx: TxReceipt;
+  dispatchTx: providers.TransactionReceipt;
   ism: IsmContext;
   hook: HookContext;
 }

@@ -1,4 +1,5 @@
-import { TxReceipt } from '@hyperlane-xyz/provider-sdk/module';
+import { TransactionReceipt } from '@ethersproject/providers';
+
 import { IRegistry } from '@hyperlane-xyz/registry';
 import {
   DispatchedMessage,
@@ -6,8 +7,10 @@ import {
   HyperlaneCore,
   HyperlaneRelayer,
   MultiProvider,
+  TxSubmitterBuilder,
   TxSubmitterType,
 } from '@hyperlane-xyz/sdk';
+import { ProtocolType } from '@hyperlane-xyz/utils';
 
 import { log, logGreen } from '../logger.js';
 import { ExtendedSubmissionStrategy } from '../submitters/types.js';
@@ -38,8 +41,10 @@ export function stubMerkleTreeConfig(
 export function canSelfRelay(
   selfRelay: boolean,
   config: ExtendedSubmissionStrategy,
-  transactionReceipts: Awaited<TxReceipt>,
-): { relay: true; txReceipt: TxReceipt } | { relay: false } {
+  transactionReceipts: Awaited<
+    ReturnType<TxSubmitterBuilder<ProtocolType>['submit']>
+  >,
+): { relay: true; txReceipt: TransactionReceipt } | { relay: false } {
   if (!transactionReceipts) {
     return { relay: false };
   }
@@ -92,7 +97,7 @@ export type RunSelfRelayOptions = {
   core?: HyperlaneCore;
   multiProvider: MultiProvider<{}>;
   registry: IRegistry;
-  txReceipt: TxReceipt;
+  txReceipt: TransactionReceipt;
   successMessage?: string;
 };
 

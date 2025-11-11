@@ -1,9 +1,4 @@
-import { AnnotatedTx, TxReceipt } from '@hyperlane-xyz/provider-sdk/module';
-import {
-  ITransactionSubmitter,
-  TransactionSubmitterType,
-} from '@hyperlane-xyz/provider-sdk/submitter';
-import { Address, assert } from '@hyperlane-xyz/utils';
+import { Address, ProtocolType, assert } from '@hyperlane-xyz/utils';
 
 import {
   InterchainAccount,
@@ -11,8 +6,14 @@ import {
 } from '../../../middleware/account/InterchainAccount.js';
 import { ChainMap } from '../../../types.js';
 import { MultiProvider } from '../../MultiProvider.js';
+import {
+  AnnotatedEV5Transaction,
+  ProtocolTypedReceipt,
+} from '../../ProviderType.js';
 import { CallData } from '../types.js';
 
+import { TxSubmitterInterface } from './TxSubmitterInterface.js';
+import { TxSubmitterType } from './TxSubmitterTypes.js';
 import { EvmIcaTxSubmitterProps } from './ethersV5/types.js';
 import { getSubmitter } from './submitterBuilderGetter.js';
 
@@ -24,14 +25,14 @@ type EvmIcaTxSubmitterConstructorConfig = Omit<
 };
 
 export class EvmIcaTxSubmitter
-  implements
-    ITransactionSubmitter<typeof TransactionSubmitterType.INTERCHAIN_ACCOUNT>
+  implements TxSubmitterInterface<ProtocolType.Ethereum>
 {
-  readonly type = TransactionSubmitterType.INTERCHAIN_ACCOUNT;
+  readonly txSubmitterType: TxSubmitterType =
+    TxSubmitterType.INTERCHAIN_ACCOUNT;
 
   protected constructor(
     protected readonly config: EvmIcaTxSubmitterConstructorConfig,
-    protected readonly submitter: ITransactionSubmitter<string>,
+    protected readonly submitter: TxSubmitterInterface<ProtocolType.Ethereum>,
     protected readonly multiProvider: MultiProvider,
     protected readonly interchainAccountApp: InterchainAccount,
   ) {}
@@ -49,7 +50,7 @@ export class EvmIcaTxSubmitter
       `Origin chain InterchainAccountRouter address not supplied and none found in the registry metadata for chain ${config.chain}`,
     );
 
-    const internalSubmitter = await getSubmitter(
+    const internalSubmitter = await getSubmitter<ProtocolType.Ethereum>(
       multiProvider,
       config.internalSubmitter,
       coreAddressesByChain,
@@ -81,7 +82,13 @@ export class EvmIcaTxSubmitter
     );
   }
 
-  async submit(...txs: AnnotatedTx[]): Promise<TxReceipt[]> {
+  async submit(
+    ...txs: AnnotatedEV5Transaction[]
+  ): Promise<
+    | void
+    | ProtocolTypedReceipt<ProtocolType.Ethereum>['receipt']
+    | ProtocolTypedReceipt<ProtocolType.Ethereum>['receipt'][]
+  > {
     if (txs.length === 0) {
       return [];
     }

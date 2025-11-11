@@ -8,7 +8,6 @@ import {
   MailboxClient__factory,
   Mailbox__factory,
 } from '@hyperlane-xyz/core';
-import { TxReceipt } from '@hyperlane-xyz/provider-sdk/module';
 import {
   Address,
   AddressBytes32,
@@ -457,7 +456,9 @@ export class HyperlaneCore extends HyperlaneApp<CoreFactories> {
     return { id, message, parsed };
   }
 
-  static getDispatchedMessages(sourceTx: TxReceipt): DispatchedMessage[] {
+  static getDispatchedMessages(
+    sourceTx: TransactionReceipt | ViemTxReceipt,
+  ): DispatchedMessage[] {
     const mailbox = Mailbox__factory.createInterface();
     const dispatchLogs = findMatchingLogEvents(
       sourceTx.logs,

@@ -4,11 +4,6 @@ import {
 } from '@safe-global/safe-core-sdk-types';
 import { Logger } from 'pino';
 
-import { TxReceipt } from '@hyperlane-xyz/provider-sdk/module';
-import {
-  ITransactionSubmitter,
-  TransactionSubmitterType,
-} from '@hyperlane-xyz/provider-sdk/submitter';
 import { Address, assert, rootLogger } from '@hyperlane-xyz/utils';
 
 // prettier-ignore
@@ -16,12 +11,14 @@ import { Address, assert, rootLogger } from '@hyperlane-xyz/utils';
 import { canProposeSafeTransactions, getSafe, getSafeService } from '../../../../utils/gnosisSafe.js';
 import { MultiProvider } from '../../../MultiProvider.js';
 import { AnnotatedEV5Transaction } from '../../../ProviderType.js';
+import { TxSubmitterType } from '../TxSubmitterTypes.js';
 
+import { EV5TxSubmitterInterface } from './EV5TxSubmitterInterface.js';
 import { EV5GnosisSafeTxSubmitterProps } from './types.js';
 
-export class EV5GnosisSafeTxSubmitter implements ITransactionSubmitter {
-  public readonly type: TransactionSubmitterType =
-    TransactionSubmitterType.GNOSIS_SAFE;
+export class EV5GnosisSafeTxSubmitter implements EV5TxSubmitterInterface {
+  public readonly txSubmitterType: TxSubmitterType =
+    TxSubmitterType.GNOSIS_SAFE;
 
   protected readonly logger: Logger = rootLogger.child({
     module: 'gnosis-safe-submitter',
@@ -105,10 +102,9 @@ export class EV5GnosisSafeTxSubmitter implements ITransactionSubmitter {
     return safeTransaction;
   }
 
-  public async submit(...txs: AnnotatedEV5Transaction[]): Promise<TxReceipt[]> {
+  public async submit(...txs: AnnotatedEV5Transaction[]): Promise<void> {
     const safeTransaction = await this.createSafeTransaction(...txs);
-    await this.proposeSafeTransaction(safeTransaction);
-    return [];
+    return this.proposeSafeTransaction(safeTransaction);
   }
 
   private async proposeSafeTransaction(

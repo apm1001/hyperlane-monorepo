@@ -1,7 +1,7 @@
 import { stringify as yamlStringify } from 'yaml';
 
 import { AnnotatedEV5Transaction, ChainName } from '@hyperlane-xyz/sdk';
-import { errorToString } from '@hyperlane-xyz/utils';
+import { ProtocolType, errorToString } from '@hyperlane-xyz/utils';
 
 import { WriteCommandContext } from '../context/types.js';
 import { getSubmitterByStrategy } from '../deploy/warp.js';
@@ -25,7 +25,7 @@ export async function runSubmit({
   receiptsFilepath: string;
   strategyPath: string;
 }) {
-  const { submitter } = await getSubmitterByStrategy({
+  const { submitter } = await getSubmitterByStrategy<ProtocolType>({
     chain,
     context,
     strategyUrl: strategyPath,
