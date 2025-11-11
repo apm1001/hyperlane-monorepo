@@ -1,16 +1,16 @@
 import { z } from 'zod';
 
+import { TransactionSubmitterType } from '@hyperlane-xyz/provider-sdk/submitter';
 import {
   SubmitterMetadata,
   SubmitterMetadataSchema,
-  TxSubmitterType,
   ZChainName,
   preprocessChainSubmissionStrategy,
   refineChainSubmissionStrategy,
 } from '@hyperlane-xyz/sdk';
 
 export const CustomTxSubmitterType = {
-  ...TxSubmitterType,
+  ...TransactionSubmitterType,
   FILE: 'file',
 } as const;
 

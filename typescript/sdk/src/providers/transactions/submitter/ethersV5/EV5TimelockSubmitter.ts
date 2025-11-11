@@ -2,17 +2,18 @@ import {
   TimelockController,
   TimelockController__factory,
 } from '@hyperlane-xyz/core';
-import { ProtocolType, assert } from '@hyperlane-xyz/utils';
+import { TxReceipt } from '@hyperlane-xyz/provider-sdk/module';
+import {
+  ITransactionSubmitter,
+  TransactionSubmitterType,
+} from '@hyperlane-xyz/provider-sdk/submitter';
+import { assert } from '@hyperlane-xyz/utils';
 
 import { EMPTY_BYTES_32 } from '../../../../timelock/evm/constants.js';
 import { ChainMap } from '../../../../types.js';
 import { MultiProvider } from '../../../MultiProvider.js';
-import {
-  AnnotatedEV5Transaction,
-  ProtocolTypedReceipt,
-} from '../../../ProviderType.js';
+import { AnnotatedEV5Transaction } from '../../../ProviderType.js';
 import { CallData } from '../../types.js';
-import { TxSubmitterInterface } from '../TxSubmitterInterface.js';
 import { TxSubmitterType } from '../TxSubmitterTypes.js';
 import { getSubmitter } from '../submitterBuilderGetter.js';
 
@@ -26,15 +27,15 @@ type EvmTimelockControllerSubmitterConstructorConfig = Required<
 >;
 
 export class EV5TimelockSubmitter
-  implements TxSubmitterInterface<ProtocolType.Ethereum>
+  implements
+    ITransactionSubmitter<typeof TransactionSubmitterType.TIMELOCK_CONTROLLER>
 {
-  public readonly txSubmitterType: TxSubmitterType =
-    TxSubmitterType.TIMELOCK_CONTROLLER;
+  public readonly type = TxSubmitterType.TIMELOCK_CONTROLLER;
 
   protected constructor(
     protected readonly config: EvmTimelockControllerSubmitterConstructorConfig,
     protected readonly multiProvider: MultiProvider,
-    protected readonly proposerSubmitter: TxSubmitterInterface<ProtocolType.Ethereum>,
+    protected readonly proposerSubmitter: ITransactionSubmitter<string>,
     protected readonly timelockInstance: TimelockController,
   ) {}
 
@@ -56,7 +57,7 @@ export class EV5TimelockSubmitter
       `Expected user supplied delay ${delay} to be greater or equal than the configured minDelay ${minDelay}`,
     );
 
-    const proposerSubmitter = await getSubmitter<ProtocolType.Ethereum>(
+    const proposerSubmitter = await getSubmitter(
       multiProvider,
       config.proposerSubmitter,
       coreAddressesByChain,
@@ -75,13 +76,7 @@ export class EV5TimelockSubmitter
     );
   }
 
-  async submit(
-    ...txs: AnnotatedEV5Transaction[]
-  ): Promise<
-    | void
-    | ProtocolTypedReceipt<ProtocolType.Ethereum>['receipt']
-    | ProtocolTypedReceipt<ProtocolType.Ethereum>['receipt'][]
-  > {
+  async submit(...txs: AnnotatedEV5Transaction[]): Promise<TxReceipt[]> {
     if (txs.length === 0) {
       return [];
     }

@@ -7,3 +7,4 @@ export {
 } from './protocol.js';
 export { MockProvider } from './test/AltVMMockProvider.js';
 export { MockSigner } from './test/AltVMMockSigner.js';
+export { AltVMJsonRpcSubmitter } from './submitters/AltVMJsonRpcSubmitter.js';

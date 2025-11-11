@@ -2,17 +2,20 @@ import { TransactionReceipt } from '@ethersproject/providers';
 import { ContractReceipt } from 'ethers';
 import { Logger } from 'pino';
 
+import {
+  ITransactionSubmitter,
+  TransactionSubmitterType,
+} from '@hyperlane-xyz/provider-sdk/submitter';
 import { assert, rootLogger } from '@hyperlane-xyz/utils';
 
 import { MultiProvider } from '../../../MultiProvider.js';
 import { AnnotatedEV5Transaction } from '../../../ProviderType.js';
-import { TxSubmitterType } from '../TxSubmitterTypes.js';
 
-import { EV5TxSubmitterInterface } from './EV5TxSubmitterInterface.js';
 import { EV5JsonRpcTxSubmitterProps } from './types.js';
 
-export class EV5JsonRpcTxSubmitter implements EV5TxSubmitterInterface {
-  public readonly txSubmitterType: TxSubmitterType = TxSubmitterType.JSON_RPC;
+export class EV5JsonRpcTxSubmitter implements ITransactionSubmitter {
+  public readonly type: TransactionSubmitterType =
+    TransactionSubmitterType.JSON_RPC;
 
   protected readonly logger: Logger = rootLogger.child({
     module: 'json-rpc-submitter',

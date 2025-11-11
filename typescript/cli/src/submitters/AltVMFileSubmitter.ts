@@ -1,24 +1,18 @@
 import { Logger } from 'pino';
 
-import { AltVM, ProtocolType } from '@hyperlane-xyz/provider-sdk';
+import { AltVM } from '@hyperlane-xyz/provider-sdk';
 import { AnnotatedTx, TxReceipt } from '@hyperlane-xyz/provider-sdk/module';
-import {
-  ProtocolReceipt,
-  ProtocolTypedTransaction,
-  TxSubmitterInterface,
-  TxSubmitterType,
-} from '@hyperlane-xyz/sdk';
+import { ITransactionSubmitter } from '@hyperlane-xyz/provider-sdk/submitter';
 import { Annotated, assert, rootLogger } from '@hyperlane-xyz/utils';
 
 import { readYamlOrJson, writeYamlOrJson } from '../utils/files.js';
 
 import { CustomTxSubmitterType, FileTxSubmitterProps } from './types.js';
 
-export class AltVMFileSubmitter<PT extends ProtocolType>
-  implements TxSubmitterInterface<PT>
+export class AltVMFileSubmitter
+  implements ITransactionSubmitter<typeof CustomTxSubmitterType.FILE>
 {
-  txSubmitterType: TxSubmitterType =
-    CustomTxSubmitterType.FILE as TxSubmitterType;
+  type = CustomTxSubmitterType.FILE;
 
   protected readonly logger: Logger;
 
@@ -31,9 +25,7 @@ export class AltVMFileSubmitter<PT extends ProtocolType>
     });
   }
 
-  async submit(
-    ...txs: Annotated<ProtocolTypedTransaction<PT>['transaction']>[]
-  ): Promise<ProtocolReceipt<PT>[]> {
+  async submit(...txs: Annotated<AnnotatedTx[]>): Promise<TxReceipt[]> {
     const filepath = this.props.filepath.trim();
     const allTxs = [];
 

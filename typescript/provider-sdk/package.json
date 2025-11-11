@@ -25,7 +25,8 @@
     "check": "tsc --noEmit",
     "lint": "eslint",
     "clean": "rm -rf ./dist",
-    "prettier": "prettier --write ."
+    "prettier": "prettier --write .",
+    "dev": "tsc --watch"
   },
   "dependencies": {
     "@hyperlane-xyz/utils": "19.4.0",

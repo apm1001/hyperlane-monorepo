@@ -164,10 +164,10 @@ export class MultisigMetadataBuilder implements MetadataBuilder {
 
     const merkleTree = context.hook.address;
 
-    const matchingInsertion = context.dispatchTx.logs
-      .filter((log) => eqAddressEvm(log.address, merkleTree))
-      .map((log) => MerkleTreeInterface.parseLog(log))
-      .find((event) => event.args.messageId === context.message.id);
+    const matchingInsertion = (context.dispatchTx.logs as any) // @TODO: Remove any
+      .filter((log: any) => eqAddressEvm(log.address, merkleTree)) // @TODO: Remove any
+      .map((log: any) => MerkleTreeInterface.parseLog(log)) // @TODO: Remove any
+      .find((event: any) => event.args.messageId === context.message.id); // @TODO: Remove any
 
     assert(
       matchingInsertion,

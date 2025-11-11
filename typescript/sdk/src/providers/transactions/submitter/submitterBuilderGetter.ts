@@ -1,12 +1,14 @@
+import {
+  ITransactionSubmitter,
+  TransactionSubmitterType,
+} from '@hyperlane-xyz/provider-sdk/submitter';
 import { ProtocolType, assert } from '@hyperlane-xyz/utils';
 
 import { ChainMap, ProtocolMap } from '../../../types.js';
 import { MultiProvider } from '../../MultiProvider.js';
 
 import { EvmIcaTxSubmitter } from './IcaTxSubmitter.js';
-import { TxSubmitterInterface } from './TxSubmitterInterface.js';
 import { TxSubmitterType } from './TxSubmitterTypes.js';
-import { TxSubmitterBuilder } from './builder/TxSubmitterBuilder.js';
 import { SubmissionStrategy } from './builder/types.js';
 import { EV5GnosisSafeTxBuilder } from './ethersV5/EV5GnosisSafeTxBuilder.js';
 import { EV5GnosisSafeTxSubmitter } from './ethersV5/EV5GnosisSafeTxSubmitter.js';
@@ -22,33 +24,17 @@ export type SubmitterBuilderSettings = {
   additionalSubmitterFactories?: ProtocolMap<Record<string, SubmitterFactory>>;
 };
 
-export async function getSubmitterBuilder<TProtocol extends ProtocolType>({
-  submissionStrategy,
-  multiProvider,
-  coreAddressesByChain,
-  additionalSubmitterFactories,
-}: SubmitterBuilderSettings): Promise<TxSubmitterBuilder<TProtocol>> {
-  const submitter = await getSubmitter<TProtocol>(
-    multiProvider,
-    submissionStrategy.submitter,
-    coreAddressesByChain,
-    additionalSubmitterFactories,
-  );
-
-  return new TxSubmitterBuilder<TProtocol>(submitter);
-}
-
-export type SubmitterFactory<TProtocol extends ProtocolType = any> = (
+export type SubmitterFactory = (
   multiProvider: MultiProvider,
   metadata: SubmitterMetadata,
   coreAddressesByChain: ChainMap<Record<string, string>>,
-) => Promise<TxSubmitterInterface<TProtocol>> | TxSubmitterInterface<TProtocol>;
+) => Promise<ITransactionSubmitter<string>> | ITransactionSubmitter<string>;
 
 const EVM_SUBMITTERS_FACTORIES: Record<string, SubmitterFactory> = {
-  [TxSubmitterType.JSON_RPC]: (multiProvider, metadata) => {
+  [TransactionSubmitterType.JSON_RPC]: (multiProvider, metadata) => {
     // Used to type narrow metadata
     assert(
-      metadata.type === TxSubmitterType.JSON_RPC,
+      metadata.type === TransactionSubmitterType.JSON_RPC,
       `Invalid metadata type: ${metadata.type}, expected ${TxSubmitterType.JSON_RPC}`,
     );
     return new EV5JsonRpcTxSubmitter(multiProvider, metadata);
@@ -125,14 +111,14 @@ const defaultSubmitterFactories: ProtocolMap<Record<string, SubmitterFactory>> =
  * @returns A promise that resolves to an instance of a TxSubmitterInterface.
  * @throws If no submitter factory is registered for the type specified in the metadata.
  */
-export async function getSubmitter<TProtocol extends ProtocolType>(
+export async function getSubmitter(
   multiProvider: MultiProvider,
   submitterMetadata: SubmitterMetadata,
   coreAddressesByChain: ChainMap<Record<string, string>>,
   additionalSubmitterFactories: ProtocolMap<
     Record<string, SubmitterFactory>
   > = {} as ProtocolMap<{}>,
-): Promise<TxSubmitterInterface<TProtocol>> {
+): Promise<ITransactionSubmitter<string>> {
   const mergedSubmitterRegistry = {
     ...defaultSubmitterFactories,
   };

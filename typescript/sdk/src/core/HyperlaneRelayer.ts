@@ -2,6 +2,7 @@ import { ethers, providers } from 'ethers';
 import { Logger } from 'pino';
 import { z } from 'zod';
 
+import { TxReceipt } from '@hyperlane-xyz/provider-sdk/module';
 import {
   Address,
   ParsedMessage,
@@ -240,7 +241,7 @@ export class HyperlaneRelayer {
   }
 
   async relayMessage(
-    dispatchTx: providers.TransactionReceipt,
+    dispatchTx: TxReceipt,
     messageIndex = 0,
     message = HyperlaneCore.getDispatchedMessages(dispatchTx)[messageIndex],
   ): Promise<ethers.ContractReceipt> {
